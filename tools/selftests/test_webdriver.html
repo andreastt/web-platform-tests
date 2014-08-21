@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>wpt webdriver.js integration tests</title>
+<script src=/resources/testharness.js></script>
+<script src=/resources/webdriver.js></script>
+
+<button>button</button>
+<input id=text>
+<input id=selected type=checkbox checked>
+<input id=unselected type=checkbox>
+<p id=hidden style="display: none">hidden</p>
+
+<script>
+test(function() {
+	var id = driver.sessionId;
+	assert_true(typeof id === "string");
+	assert_true(id.length > 0);
+}, "driver.sessionId");
+
+test(function() {
+	var caps = driver.capabilities;
+	assert_own_property(caps, "browserName");
+	assert_own_property(caps, "platform");
+	assert_own_property(caps, "javascriptEnabled");
+	assert_own_property(caps, "cssSelectorsEnabled");
+	assert_own_property(caps, "version");
+}, "driver.capabilities");
+
+test(function() {
+	var timeouts = driver.timeouts;
+	assert_own_property(timeouts, "pageLoad");
+	assert_own_property(timeouts, "implicit");
+	assert_own_property(timeouts, "script");
+}, "driver.timeouts");
+
+test(function() {
+	var original = driver.timeouts;
+	driver.timeouts = {"type": "script", "ms": 440};
+	assert_not_equals(driver.timeouts["script"], original["script"]);
+}, "driver.timeouts = {…}");
+
+test(function() {
+	var timeouts = driver.timeouts;
+	var props = ["pageLoad", "implicit", "script"];
+	for (sprop in props) {
+		var prop = driver.timeouts[sprop];
+		assert_true(typeof prop === "number");
+		assert_equals(prop, timeouts[sprop]);
+	}	
+}, "getting individual driver.timeouts properties");
+
+test(function() {
+	var original = driver.timeouts;
+	var props = ["pageLoad", "implicit", "script"];
+	for (sprop in props) {
+		driver.timeouts[sprop] = 123;
+		var prop = driver.timeouts[sprop];
+		assert_not_equals(prop, original[sprop]);
+		assert_equals(prop, 123);
+	}
+}, "setting individual driver.timeouts properties");
+
+test(function() {
+	var handle = driver.windowHandle;
+	assert_true(typeof handle === "string");
+	assert_true(handle.length > 0);
+}, "driver.windowHandle");
+
+test(function() {
+	var handles = driver.windowHandles;
+	assert_true(handles instanceof Array);
+	assert_true(handles.length == 1);
+	assert_equals(handles[0], driver.windowHandle);
+}, "driver.windowHandles");
+
+test(function() { assert_equals(driver.url, window.location) }, "driver.url matches window.location");
+
+// TODO(ato): The following tests should be run in an iframe:
+test(function() { assert_own_property(driver, "forward") }, "driver has forward property");
+test(function() { assert_own_property(driver, "back") }, "driver has back property");
+test(function() { assert_own_property(driver, "refresh") }, "driver has refresh property");
+
+test(function() { assert_equals(driver.execute("return 42"), 42) }, "driver.execute");
+
+test(function() {
+	var capt = driver.screenshot();
+	assert_true(typeof capt === "string");
+	assert_true(capt.length > 0);
+}, "driver.screenshot()");
+
+test(function() {
+	assert_equals(driver.source, document.documentElement.outerHTML);
+}, "driver.source matches document.documentElement.outerHTML");
+
+test(function() {
+	assert_equals(driver.title, document.title);
+}, "driver.title matches document.title");
+
+// Element tests
+var buttonEl = document.querySelector("button");
+var hiddenEl = document.querySelector("#hidden");
+var inputFieldEl = document.querySelector("input#text");
+var selectedEl = document.querySelector("#selected");
+var unselectedEl = document.querySelector("#unselected");
+
+test(function() {
+	var button = driver.Element(buttonEl);
+	assert_equals(button.tagName, buttonEl.localName);
+}, "Element.tagName");
+
+test(function() {
+	var button = driver.Element(buttonEl);
+	assert_equals(button.text, "button");
+}, "Element.text");
+
+test(function() {
+	var inputField = driver.Element(inputFieldEl);
+	inputFieldEl.value = "hooba";
+	assert_equals(inputField.value, inputFieldEl.value);
+	inputFieldEl.value = "";
+}, "Element.value");
+
+test(function() {
+	var selected = driver.Element(selectedEl);
+	var unselected = driver.Element(unselectedEl);
+	assert_true(selected.selected);
+	assert_false(unselected.selected);
+}, "Element.selected");
+
+test(function() {
+	var button = driver.Element(buttonEl);
+	var hidden = driver.Element(hiddenEl);
+	assert_true(button.displayed);
+	assert_false(hidden.displayed);
+}, "Element.displayed");
+
+test(function() {
+	var button = driver.Element(buttonEl);
+	var loc = button.location;
+	assert_equals(loc.x, 10);
+	assert_equals(loc.y, 11);
+}, "Element.location");
+
+test(function() {
+	var button = driver.Element(buttonEl);
+	var size = button.size;
+	assert_equals(size.width, 49);
+	assert_equals(size.height, 18);
+}, "Element.size");
+
+var clickTest = async_test("WebElement.click");
+clickTest.step(function() {
+	var button = driver.Element(buttonEl);
+	buttonEl.onclick = clickTest.step_func(function(ev) {
+		assert_true();
+		clickTest.done();
+	});
+	button.click();
+	buttonEl.onclick = null;
+});
+
+test(function() {
+	var inputField = driver.Element(inputFieldEl);
+	inputField.sendKeys("foo");
+	assert_equals(inputField.value, "foo");
+	inputFieldEl.value = "";
+}, "Element.sendKeys");
+
+test(function() {
+	var inputField = driver.Element(inputFieldEl);
+	inputFieldEl.value = "bar";
+	inputField.clear();
+	assert_equals(inputFieldEl.value.length, 0);
+}, "Element.clear");
+
+test(function() {
+	var selected = driver.Element(selectedEl);
+	assert_equals(selected.attribute("checked"), "true");
+}, "Element.attribute");
+
+test(function() {
+	var hidden = driver.Element(hiddenEl);
+	assert_equals(hidden.cssValue("display"), "none");
+}, "Element.cssValue");
+</script>

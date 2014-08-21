@@ -40,6 +40,7 @@ exclude_php_hack = True
 ref_suffixes = ["_ref", "-ref"]
 wd_pattern = "*.py"
 blacklist = ["/", "/tools/", "/resources/", "/common/", "/conformance-checkers/"]
+whitelist = ["/tools/selftests"]
 
 logging.basicConfig()
 logger = logging.getLogger("manifest")
@@ -361,12 +362,13 @@ def get_manifest_items(rel_path):
     if filename.startswith("MANIFEST") or filename.startswith("."):
         return []
 
-    for item in blacklist:
-        if item == "/":
-            if "/" not in url[1:]:
+    if not filter(lambda item: url.startswith(item), whitelist):
+        for item in blacklist:
+            if item == "/":
+                if "/" not in url[1:]:
+                    return []
+            elif url.startswith(item):
                 return []
-        elif url.startswith(item):
-            return []
 
     if name.startswith("stub-"):
         return [Stub(rel_path, url)]

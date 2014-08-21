@@ -1,4 +1,6 @@
- # -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import argparse
 import json
 import logging
@@ -10,6 +12,7 @@ import threading
 import time
 import urllib2
 import uuid
+
 from collections import defaultdict
 from multiprocessing import Process, Event
 
@@ -20,15 +23,19 @@ from wptserve import server as wptserve, handlers
 from wptserve.router import any_method
 sys.path.insert(1, os.path.join(repo_root, "tools", "pywebsocket", "src"))
 from mod_pywebsocket import standalone as pywebsocket
+sys.path.insert(1, os.path.join(repo_root, "tools", "webdriver"))
+import webdriver
+
 
 routes = [("GET", "/tools/runner/*", handlers.file_handler),
           ("POST", "/tools/runner/update_manifest.py", handlers.python_script_handler),
           (any_method, "/tools/*", handlers.ErrorHandler(404)),
           (any_method, "/serve.py", handlers.ErrorHandler(404)),
+          (any_method, "/tools/webdriver/webdriver.py", handlers.ErrorHandler(404)),
+          (any_method, "/session*", webdriver.session_handler),
           (any_method, "*.py", handlers.python_script_handler),
           ("GET", "*.asis", handlers.as_is_handler),
-          ("GET", "*", handlers.file_handler),
-          ]
+          ("GET", "*", handlers.file_handler)]
 
 rewrites = [("GET", "/resources/WebIDLParser.js", "/resources/webidl2/lib/webidl2.js")]
 
