@@ -28,6 +28,7 @@ import webdriver
 
 
 routes = [("GET", "/tools/runner/*", handlers.file_handler),
+          ("GET", "/tools/selftests/*", handlers.file_handler),
           ("POST", "/tools/runner/update_manifest.py", handlers.python_script_handler),
           (any_method, "/tools/*", handlers.ErrorHandler(404)),
           (any_method, "/serve.py", handlers.ErrorHandler(404)),
@@ -45,6 +46,7 @@ subdomains = [u"www",
               u"天気の良い日",
               u"élève"]
 
+logging.basicConfig()
 logger = None
 
 def default_logger(level):

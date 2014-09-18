@@ -11,6 +11,10 @@
 <p id=hidden style="display: none">hidden</p>
 
 <script>
+//alert("old window: " + driver.windowHandle);
+//driver.switchToWindow(handles[1]);
+//alert("new window: " + driver.windowHandle);
+
 test(function() {
 	var id = driver.sessionId;
 	assert_true(typeof id === "string");
@@ -26,6 +30,7 @@ test(function() {
 	assert_own_property(caps, "version");
 }, "driver.capabilities");
 
+/*
 test(function() {
 	var timeouts = driver.timeouts;
 	assert_own_property(timeouts, "pageLoad");
@@ -59,6 +64,7 @@ test(function() {
 		assert_equals(prop, 123);
 	}
 }, "setting individual driver.timeouts properties");
+*/
 
 test(function() {
 	var handle = driver.windowHandle;
@@ -68,19 +74,28 @@ test(function() {
 
 test(function() {
 	var handles = driver.windowHandles;
+	var nwins = window.opener == null ? 1 : 2;
 	assert_true(handles instanceof Array);
-	assert_true(handles.length == 1);
+	assert_true(handles.length == nwins);
 	assert_equals(handles[0], driver.windowHandle);
 }, "driver.windowHandles");
 
-test(function() { assert_equals(driver.url, window.location) }, "driver.url matches window.location");
+test(function() {
+	alert(driver.url);
+	alert(driver.title);
+	alert(window.location);
+	alert(window.title);
+	assert_equals(driver.url, window.location)
+}, "driver.url matches window.location");
 
 // TODO(ato): The following tests should be run in an iframe:
 test(function() { assert_own_property(driver, "forward") }, "driver has forward property");
 test(function() { assert_own_property(driver, "back") }, "driver has back property");
 test(function() { assert_own_property(driver, "refresh") }, "driver has refresh property");
 
+/*
 test(function() { assert_equals(driver.execute("return 42"), 42) }, "driver.execute");
+*/
 
 test(function() {
 	var capt = driver.screenshot();
@@ -88,6 +103,7 @@ test(function() {
 	assert_true(capt.length > 0);
 }, "driver.screenshot()");
 
+/*
 test(function() {
 	assert_equals(driver.source, document.documentElement.outerHTML);
 }, "driver.source matches document.documentElement.outerHTML");
@@ -182,4 +198,5 @@ test(function() {
 	var hidden = driver.Element(hiddenEl);
 	assert_equals(hidden.cssValue("display"), "none");
 }, "Element.cssValue");
+*/
 </script>
